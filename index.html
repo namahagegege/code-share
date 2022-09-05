@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      .container {
+        margin-left: 10px;
+      }
+      .inputs {
+        width: 40px;
+        outline: none;
+        border: none;
+      }
+      .setting {
+        margin-top: 10px;
+        text-decoration: none;
+      }
+      .table-box {
+        margin-top: 20px;
+      }
+      .errors {
+        color: red;
+      }
+      #sum-text {
+        color: blue;
+      }
+      .table-box-item {
+        width: 250px;
+      }
+    </style>
+    <title>JavaScriptの学習</title>
+  </head>
+  <body>
+    <p>JavaScriptの学習 / 総合課題8_1</p>
+    <!-- 下記に課題を書く -->
+    <div class="container">
+      確率設定 (合計が100になるように半角数字を入力してください)
+      <p>
+        大吉[<input
+          id="user-form1"
+          class="inputs"
+          maxlength="3"
+          type="text"
+        />]%
+      </p>
+      <p>
+        中吉[<input
+          id="user-form2"
+          class="inputs"
+          maxlength="3"
+          type="text"
+        />]%
+      </p>
+      <p>
+        小吉[<input
+          id="user-form3"
+          class="inputs"
+          maxlength="3"
+          type="text"
+        />]%
+      </p>
+      <p>
+        吉　[<input
+          id="user-form4"
+          class="inputs"
+          maxlength="3"
+          type="text"
+        />]%
+      </p>
+      <p>
+        末吉[<input
+          id="user-form5"
+          class="inputs"
+          maxlength="3"
+          type="text"
+        />]%
+      </p>
+      <p>
+        凶　[<input
+          id="user-form6"
+          class="inputs"
+          maxlength="3"
+          type="text"
+        />]%
+      </p>
+      <p>
+        大凶[<input
+          id="user-form7"
+          class="inputs"
+          maxlength="3"
+          type="text"
+        />]%
+      </p>
+      <p id="sum-text"></p>
+      <p class="errors" id="error-text"></p>
+      <button id="setting-button" class="setting" href="#">設定</button>
+      <span> ←クリックで設定保存</span>
+    </div>
+    <div class="box">
+      <p>
+        今日の運勢は?
+        <button id="lottery-bottun" href="#" class="setting">
+          おみくじを引く
+        </button>
+        <span>←ボタンクリックでおみくじ抽選</span>
+      </p>
+    </div>
+    <div class="answer-box">
+      結果:
+      <span id="answer-text"></span>
+    </div>
+    <div class="table-box">
+      <table border="1" id="table-box">
+        <tr>
+          <th class="table-box-item"></th>
+          <th class="table-box-item">結果</th>
+          <th class="table-box-item">出現率</th>
+        </tr>
+      </table>
+    </div>
+    <!-- *************************************************************************************************************************** -->
+    <script>
+      "use strict";
+      //総合課題8_1 解答を下記に書く
+      let getAnswerText = document.getElementById("answer-text");
+      let getErrorText = document.getElementById("error-text");
+      let getSumText = document.getElementById("sum-text");
+      let getInputClass = document.getElementsByClassName("inputs");
+      let getSettingButton = document.getElementById("setting-button");
+      let getLotteryButton = document.getElementById("lottery-bottun");
+      let getAllInput = document.querySelectorAll("input");
+      let getTableBox = document.getElementById("table-box");
+      let trCreate = document.createElement("tr");
+      let answers = (text) => {
+        getAnswerText.innerHTML = text;
+      };
+      let allTd = document.getElementsByTagName("td");
+      let number = 1;
+      let probabilityFirstCounts = 0;
+      let probabilitySecondCounts = 0;
+      let probabilityThirdCounts = 0;
+      let probabilityFourthCounts = 0;
+      let probabilityFifthCounts = 0;
+      let probabilitySixCounts = 0;
+      let probabilityLostCounts = 0;
+
+      // ****************************************************************************************************************************************************
+      window.addEventListener(
+        "load",
+        function () {
+          getErrorText.innerHTML = "";
+          getSettingButton.disabled = true;
+          getLotteryButton.disabled = true;
+        },
+        false
+      );
+      // ****************************************************************************************************************************************************
+      let errorsText = (text) => {
+        getErrorText.innerHTML = text;
+      };
+      // ****************************************************************************************************************************************************
+
+      // 100以上の数値を入力できなくする
+      // 入力欄に入力された数値の合計が100以上ならエラー
+      // 入力欄に入力された各要素の数値通りに確率を調整する
+      // 入力された確率通りに抽選を行い結果を出力
+      document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+          // blurバリデーション
+          getAllInput.forEach((input) => {
+            input.addEventListener(
+              "blur",
+              function (e) {
+                let isOk = true;
+                getAllInput.forEach(({ value }) => {
+                  if (!value.match(/^[0-9]{1,3}$/)) {
+                    isOk = false;
+                  }
+                });
+                getSettingButton.disabled = !isOk;
+                errorsText("数字を半角で入力してください。");
+                if (isOk === true) {
+                  errorsText("");
+                  return;
+                }
+              },
+              false
+            );
+          }, false);
+          // **************************************************************************************************************************************************
+          //
+          let random = () => {
+            //
+
+            let arr = []; // ユーザーが入力した値配列化
+            for (let j = 0; j < getInputClass.length; j++) {
+              arr.push(parseInt(getInputClass[j].value));
+            }
+            // ************************************************************************************************************************************************
+            // 検証
+
+            // ************************************************************************************************************************************************
+            // あとで簡略化
+            let sum1 = arr[0];
+            let sum2 = arr[0] + arr[1];
+            let sum3 = arr[0] + arr[1] + arr[2];
+            let sum4 = arr[0] + arr[1] + arr[2] + arr[3];
+            let sum5 = arr[0] + arr[1] + arr[2] + arr[3] + arr[4];
+            let sum6 = arr[0] + arr[1] + arr[2] + arr[3] + arr[4] + arr[5];
+            let sum7 =
+              arr[0] + arr[1] + arr[2] + arr[3] + arr[4] + arr[5] + arr[6];
+
+            // ************************************************************************************************************************************************
+            // console.log(arr);
+
+            let maxPercent = 100;
+            let rand = Math.floor(Math.random() * maxPercent);
+            let parcentText;
+            // console.log(rand);
+
+            if (rand < sum1) {
+              answers("大吉");
+              probabilityFirstCounts++;
+              parcentText = ((probabilityFirstCounts / number) * 100).toFixed(
+                2
+              );
+              // return;
+            } else if (rand < sum2) {
+              answers("中吉");
+              probabilitySecondCounts++;
+              parcentText = ((probabilitySecondCounts / number) * 100).toFixed(
+                2
+              );
+              // return;
+            } else if (rand < sum3) {
+              answers("小吉");
+              probabilityThirdCounts++;
+              parcentText = ((probabilityThirdCounts / number) * 100).toFixed(
+                2
+              );
+              // return;
+            } else if (rand < sum4) {
+              answers("吉");
+              probabilityFourthCounts++;
+              parcentText = ((probabilityFourthCounts / number) * 100).toFixed(
+                2
+              );
+              // return;
+            } else if (rand < sum5) {
+              answers("末吉");
+              probabilityFifthCounts++;
+              parcentText = ((probabilityFifthCounts / number) * 100).toFixed(
+                2
+              );
+              // return;
+            } else if (rand < sum6) {
+              answers("凶");
+              probabilitySixCounts++;
+              parcentText = ((probabilitySixCounts / number) * 100).toFixed(2);
+              // return;
+            } else if (rand < sum7) {
+              answers("大凶");
+              probabilityLostCounts++;
+              parcentText = ((probabilityLostCounts / number) * 100).toFixed(2);
+              // return;
+            }
+
+            // console.log(number);
+            // console.log(probabilityFifthCounts);
+
+            // console.log(getAnswerText.innerText);
+            let newRow = getTableBox.insertRow();
+            let newCell = newRow.insertCell();
+            let text = document.createTextNode(number);
+            newCell.appendChild(text);
+            newCell = newRow.insertCell();
+            text = document.createTextNode(getAnswerText.innerText);
+            newCell.appendChild(text);
+            newCell = newRow.insertCell();
+            text = document.createTextNode(parcentText + "%");
+            newCell.appendChild(text);
+          };
+          // ************************************************************************************************************************************************
+          getSettingButton.addEventListener(
+            "click",
+            function () {
+              //
+              let sum = 0;
+              let inputArr = [];
+              for (let j = 0; j < getInputClass.length; j++) {
+                inputArr.push(parseInt(getInputClass[j].value));
+              }
+              for (let i = 0; i < inputArr.length; i++) {
+                sum += parseInt(inputArr[i]);
+                // return;
+              }
+              getSumText.innerHTML = sum;
+              console.log(sum);
+              if (sum !== 100) {
+                errorsText("合計した数値が100ではありません。");
+                getLotteryButton.disabled = true;
+              } else if (sum === 100) {
+                errorsText("");
+                getLotteryButton.disabled = false;
+              }
+            },
+            false
+          );
+          // ************************************************************************************************************************************************
+          let click = getLotteryButton.addEventListener(
+            "click",
+            function () {
+              random();
+              number++;
+            },
+            false
+          );
+        },
+        false
+      );
+    </script>
+    <!--//フォルダ名jsの中のtask_comprehensive_8_1.jsというファイルを読み込む-->
+  </body>
+</html>
